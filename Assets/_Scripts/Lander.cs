@@ -16,6 +16,15 @@ public class Lander : MonoBehaviour
     [Tooltip("最大允许降落角度（相对于垂直方向，单位：度）")]
     [SerializeField] private float maxLandingAngle = 15f;
     
+    [Header("Fuel Parameters")]
+    [Tooltip("初始燃油量")]
+    [SerializeField] private float initialFuel = 100f;
+    [Tooltip("燃油消耗速度（每秒消耗的燃油量）")]
+    [SerializeField] private float fuelConsumptionRate = 10f;
+    
+    // 燃油系统
+    private float currentFuel;
+    
     // 输入状态
     private bool leftThrust;
     private bool rightThrust;
@@ -25,6 +34,33 @@ public class Lander : MonoBehaviour
     public bool isLeftThrustActive => leftThrust;
     public bool isRightThrustActive => rightThrust;
     public bool isMainThrustActive => mainThrust;
+    
+    // 公共属性，用于暴露燃油信息
+    public float CurrentFuel => currentFuel;
+    public float InitialFuel => initialFuel;
+    
+    /// <summary>
+    /// 消耗指定数量的燃油
+    /// </summary>
+    /// <param name="amount">要消耗的燃油量</param>
+    public void ConsumeFuel(float amount)
+    {
+        currentFuel -= amount;
+        // 确保燃油量不会低于0
+        if (currentFuel < 0)
+        {
+            currentFuel = 0;
+        }
+    }
+    
+    /// <summary>
+    /// 增加指定数量的燃油
+    /// </summary>
+    /// <param name="amount">要增加的燃油量</param>
+    public void AddFuel(float amount)
+    {
+        currentFuel += amount;
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -35,20 +71,40 @@ public class Lander : MonoBehaviour
         {
             Debug.LogError("未找到 Rigidbody2D 组件！");
         }
+        
+        // 初始化燃油量
+        currentFuel = initialFuel;
     }
 
     // Update is called once per frame
     // 用于处理输入检测
     void Update()
     {
-        // 检查左箭头键或A键是否被按下
-        leftThrust = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
+        // 先检查燃油是否充足
+        if (currentFuel > 0)
+        {
+            // 检查左箭头键或A键是否被按下
+            leftThrust = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
 
-        // 检查右箭头键或D键是否被按下
-        rightThrust = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
+            // 检查右箭头键或D键是否被按下
+            rightThrust = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
 
-        // 检查上箭头键或W键是否被按下
-        mainThrust = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
+            // 检查上箭头键或W键是否被按下
+            mainThrust = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
+            
+            // 检查是否有任何按键按下，如果有则消耗燃油
+            if (leftThrust || rightThrust || mainThrust)
+            {
+                ConsumeFuel(fuelConsumptionRate * Time.deltaTime);
+            }
+        }
+        else
+        {
+            // 燃油不足时，重置所有推力状态
+            leftThrust = false;
+            rightThrust = false;
+            mainThrust = false;
+        }
     }
 
     // FixedUpdate以固定时间间隔调用，适合物理更新
