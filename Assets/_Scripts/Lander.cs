@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class Lander : MonoBehaviour
 {
+    // 单例实例
+    public static Lander Instance { get; private set; }
+    
     private Rigidbody2D rb;
     
     [Header("Thrust Parameters")]
@@ -34,9 +37,16 @@ public class Lander : MonoBehaviour
     public bool isLeftThrustActive => leftThrust;
     public bool isRightThrustActive => rightThrust;
     public bool isMainThrustActive => mainThrust;
+
     
-    // 公共属性，用于暴露燃油信息
-    public float CurrentFuel => currentFuel;
+    // 公共属性，用于暴露飞船速度信息
+    public float XVelocity => rb != null ? rb.linearVelocity.x : 0f;
+    public float YVelocity => rb != null ? rb.linearVelocity.y : 0f;
+    
+    // 公共属性，用于暴露燃油数量
+    public float FuelAmount => currentFuel;
+    
+    // 公共属性，用于暴露初始燃油数量
     public float InitialFuel => initialFuel;
     
     /// <summary>
@@ -60,8 +70,28 @@ public class Lander : MonoBehaviour
     public void AddFuel(float amount)
     {
         currentFuel += amount;
+        // 确保燃油量不会超过初始值
+        if (currentFuel > initialFuel)
+        {
+            currentFuel = initialFuel;
+        }
     }
 
+    // Awake is called when the script instance is being loaded
+    void Awake()
+    {
+        // 确保只有一个Lander实例
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

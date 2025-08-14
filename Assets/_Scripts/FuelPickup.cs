@@ -13,9 +13,7 @@ public class FuelPickup : MonoBehaviour
         if (lander != null)
         {
             // 补给燃油
-            lander.AddFuel(fuelAmount);
-            Debug.Log($"燃油补给！增加了 {fuelAmount} 燃油。当前燃油量: {lander.CurrentFuel}");
-            
+            lander.AddFuel(fuelAmount);            
             // 销毁燃油补给物体
             Destroy(gameObject);
         }
