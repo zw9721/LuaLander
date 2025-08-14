@@ -1,0 +1,9 @@
+# Roo ignore configuration
+# This file specifies which files Roo should ignore during analysis
+# These files are still under version control but not processed by Roo
+
+# Unity scene files
+*.unity
+
+# Unity prefab files
+*.prefab
